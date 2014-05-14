@@ -1,6 +1,6 @@
--------------------------------------------------------
-Python Toolbox for Nonnegative Matrix and Factorization
--------------------------------------------------------
+---------------------------------------------------
+Python Toolbox for Nonnegative Matrix Factorization
+---------------------------------------------------
 
 This package includes Python implementations (with Numpy and Scipy) of
 numerical algorithms for computing nonnegative matrix factorization.  The
