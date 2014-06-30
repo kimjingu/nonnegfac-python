@@ -63,5 +63,5 @@ References
 
 Feedback
 --------
-Please send bug reports, comments, or questions to [Jingu Kim](jingu.kim@nokia.com).
+Please send bug reports, comments, or questions to [Jingu Kim](mailto:jingu.kim@nokia.com).
 Contributions and extensions with new algorithms are welcome.
