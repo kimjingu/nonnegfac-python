@@ -2,12 +2,12 @@ import numpy as np
 import scipy.sparse as sps
 import scipy.optimize as opt
 import numpy.linalg as nla
-import matrix_utils as mu
+from nonnegfac import matrix_utils as mu
 import time
 import json
 from numpy import random
-from nnls import nnlsm_activeset
-from nnls import nnlsm_blockpivot
+from nonnegfac.nnls import nnlsm_activeset
+from nonnegfac.nnls import nnlsm_blockpivot
 
 
 class NMF_Base(object):
@@ -78,8 +78,8 @@ class NMF_Base(object):
             info['init'] = 'uniform_random'
 
         if verbose >= 0:
-            print '[NMF] Running: '
-            print json.dumps(info, indent=4, sort_keys=True)
+            print ('[NMF] Running: ')
+            print (json.dumps(info, indent=4, sort_keys=True))
 
         norm_A = mu.norm_fro(A)
         total_time = 0
@@ -103,7 +103,7 @@ class NMF_Base(object):
                 his['elapsed'].append(elapsed)
                 his['rel_error'].append(rel_error)
                 if verbose >= 2:
-                    print 'iter:' + str(i) + ', elapsed:' + str(elapsed) + ', rel_error:' + str(rel_error)
+                    print ('iter:' + str(i) + ', elapsed:' + str(elapsed) + ', rel_error:' + str(rel_error))
 
             total_time += elapsed
             if total_time > info['max_time']:
@@ -122,8 +122,8 @@ class NMF_Base(object):
             rec['his'] = his
 
         if verbose >= 0:
-            print '[NMF] Completed: '
-            print json.dumps(final, indent=4, sort_keys=True)
+            print ('[NMF] Completed: ')
+            print (json.dumps(final, indent=4, sort_keys=True))
         return (W, H, rec)
 
     def run_repeat(self, A, k, num_trial, max_iter=None, max_time=None, verbose=0):
@@ -158,9 +158,9 @@ class NMF_Base(object):
         H : Obtained coefficient matrix, shape (n,k)
         rec : dict - (debugging/experimental purpose) Auxiliary information about the execution
         """
-        for t in xrange(num_trial):
+        for t in iter(range(num_trial)):
             if verbose >= 0:
-                print '[NMF] Running the {0}/{1}-th trial ...'.format(t + 1, num_trial)
+                print ('[NMF] Running the {0}/{1}-th trial ...'.format(t + 1, num_trial))
             this = self.run(A, k, verbose=(-1 if verbose is 0 else verbose))
             if t == 0:
                 best = this
@@ -168,8 +168,8 @@ class NMF_Base(object):
                 if this[2]['final']['rel_error'] < best[2]['final']['rel_error']:
                     best = this
         if verbose >= 0:
-            print '[NMF] Best result is as follows.'
-            print json.dumps(best[2]['final'], indent=4, sort_keys=True)
+            print ('[NMF] Best result is as follows.')
+            print (json.dumps(best[2]['final'], indent=4, sort_keys=True))
         return best
 
     def iter_solver(self, A, W, H, k, it):
@@ -209,20 +209,20 @@ class NMF_ANLS_AS_NUMPY(NMF_Base):
 
     def iter_solver(self, A, W, H, k, it):
         if not sps.issparse(A):
-            for j in xrange(0, H.shape[0]):
+            for j in iter(range(0, H.shape[0])):
                 res = opt.nnls(W, A[:, j])
                 H[j, :] = res[0]
         else:
-            for j in xrange(0, H.shape[0]):
+            for j in iter(range(0, H.shape[0])):
                 res = opt.nnls(W, A[:, j].toarray()[:, 0])
                 H[j, :] = res[0]
 
         if not sps.issparse(A):
-            for j in xrange(0, W.shape[0]):
+            for j in iter(range(0, W.shape[0])):
                 res = opt.nnls(H, A[j, :])
                 W[j, :] = res[0]
         else:
-            for j in xrange(0, W.shape[0]):
+            for j in iter(range(0, W.shape[0])):
                 res = opt.nnls(H, A[j, :].toarray()[0,:])
                 W[j, :] = res[0]
         return (W, H)
@@ -274,13 +274,13 @@ class NMF_HALS(NMF_Base):
     def iter_solver(self, A, W, H, k, it):
         AtW = A.T.dot(W)
         WtW = W.T.dot(W)
-        for kk in xrange(0, k):
+        for kk in iter(range(0, k)):
             temp_vec = H[:, kk] + AtW[:, kk] - H.dot(WtW[:, kk])
             H[:, kk] = np.maximum(temp_vec, self.eps)
 
         AH = A.dot(H)
         HtH = H.T.dot(H)
-        for kk in xrange(0, k):
+        for kk in iter(range(0, k)):
             temp_vec = W[:, kk] * HtH[kk, kk] + AH[:, kk] - W.dot(HtH[:, kk])
             W[:, kk] = np.maximum(temp_vec, self.eps)
             ss = nla.norm(W[:, kk])
@@ -326,13 +326,13 @@ class NMF(NMF_ANLS_BLOCKPIVOT):
 
 
 def _mmio_example(m=100, n=100, k=10):
-    print '\nTesting mmio read and write ...\n'
+    print ('\nTesting mmio read and write ...\n')
     import scipy.io.mmio as mmio
 
     W_org = random.rand(m, k)
     H_org = random.rand(n, k)
     X = W_org.dot(H_org.T)
-    X[random.rand(n, k) < 0.5] = 0
+    X[random.rand(m, n) < 0.5] = 0
     X_sparse = sps.csr_matrix(X)
 
     filename = '_temp_mmio.mtx'
@@ -350,7 +350,7 @@ def _compare_nmf(m=300, n=300, k=10):
     H_org = random.rand(n, k)
     A = W_org.dot(H_org.T)
 
-    print '\nComparing NMF algorithms ...\n'
+    print ('\nComparing NMF algorithms ...\n')
 
     names = [NMF_MU, NMF_HALS, NMF_ANLS_BLOCKPIVOT,
              NMF_ANLS_AS_NUMPY, NMF_ANLS_AS_GROUP]
@@ -386,12 +386,12 @@ def _test_nmf(m=300, n=300, k=10):
                  NMF_ANLS_AS_NUMPY, NMF_HALS, NMF_MU]
     iters = [50, 50, 50, 500, 1000]
 
-    print '\nTesting with a dense matrix...\n'
+    print ('\nTesting with a dense matrix...\n')
     for alg_name, i in zip(alg_names, iters):
         alg = alg_name()
         rslt = alg.run(A, k, max_iter=i)
 
-    print '\nTesting with a sparse matrix...\n'
+    print ('\nTesting with a sparse matrix...\n')
     A_sparse = sps.csr_matrix(A)
     for alg_name, i in zip(alg_names, iters):
         alg = alg_name()
