@@ -332,7 +332,7 @@ def _mmio_example(m=100, n=100, k=10):
     W_org = random.rand(m, k)
     H_org = random.rand(n, k)
     X = W_org.dot(H_org.T)
-    X[random.rand(n, k) < 0.5] = 0
+    X[random.rand(m, n) < 0.5] = 0
     X_sparse = sps.csr_matrix(X)
 
     filename = '_temp_mmio.mtx'

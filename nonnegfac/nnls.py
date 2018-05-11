@@ -407,7 +407,7 @@ def _test_column_grouping(m=10, n=5000, num_repeat=5, verbose=False):
     print ('OK' if all([np.array_equal(a, b) for (a, b) in zip(grps1, grps2)]) else 'Fail')
     print ('OK' if all([np.array_equal(a, b) for (a, b) in zip(grps1, grps3)]) else 'Fail')
 
-    for i in xrange(0, num_repeat):
+    for i in iter(range(0, num_repeat)):
         A = np.random.rand(m, n)
         B = A > 0.5
         start = time.time()
@@ -429,7 +429,7 @@ def _test_column_grouping(m=10, n=5000, num_repeat=5, verbose=False):
 
 def _test_normal_eq_comb(m=10, k=3, num_repeat=5):
     print ('\nTesting normal_eq_comb() ...\n')
-    for i in xrange(0, num_repeat):
+    for i in iter(range(0, num_repeat)):
         A = np.random.rand(2 * m, m)
         X = np.random.rand(m, k)
         C = (np.random.rand(m, k) > 0.5)
@@ -449,7 +449,7 @@ def _test_nnlsm():
     k = 200
     rep = 5
 
-    for r in xrange(0, rep):
+    for r in iter(range(0, rep)):
         A = np.random.rand(m, n)
         X_org = np.random.rand(n, k)
         X_org[np.random.rand(n, k) < 0.5] = 0
@@ -479,7 +479,7 @@ def _test_nnlsm():
         import scipy.optimize as opt
         start = time.time()
         C3 = np.zeros([n, k])
-        for i in xrange(0, k):
+        for i in iter(range(0, k)):
             res = opt.nnls(A, B[:, i])
             C3[:, i] = res[0]
         elapsed3 = time.time() - start

@@ -165,7 +165,7 @@ def sparse_remove_row(X, to_remove):
     if not sps.isspmatrix_lil(X):
         X = X.tolil()
 
-    to_keep = [i for i in xrange(0, X.shape[0]) if i not in to_remove]
+    to_keep = [i for i in iter(range(0, X.shape[0])) if i not in to_remove]
     Y = sps.vstack([X.getrowview(i) for i in to_keep])
     return Y
 
