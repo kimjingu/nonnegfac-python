@@ -52,7 +52,7 @@ def nnlsm_blockpivot(A, B, is_input_prod=False, init=None):
     (n, k) = AtB.shape
     MAX_ITER = n * 5
 
-    if init != None:
+    if init is not  None:
         PassSet = init > 0
         X, num_cholesky, num_eq = normal_eq_comb(AtA, AtB, PassSet)
         Y = AtA.dot(X) - AtB
@@ -68,7 +68,7 @@ def nnlsm_blockpivot(A, B, is_input_prod=False, init=None):
     p_vec[:] = p_bar
     ninf_vec = np.zeros([k])
     ninf_vec[:] = n + 1
-    not_opt_set = np.logical_and(Y < 0, -PassSet)
+    not_opt_set = np.logical_and(Y < 0, ~PassSet)
     infea_set = np.logical_and(X < 0, PassSet)
 
     not_good = np.sum(not_opt_set, axis=0) + np.sum(infea_set, axis=0)
@@ -88,7 +88,7 @@ def nnlsm_blockpivot(A, B, is_input_prod=False, init=None):
         temp1 = np.logical_and(not_opt_colset, not_good >= ninf_vec)
         temp2 = p_vec >= 1
         cols_set2 = np.logical_and(temp1, temp2)
-        cols_set3 = np.logical_and(temp1, -temp2)
+        cols_set3 = np.logical_and(temp1, ~temp2)
 
         cols1 = cols_set1.nonzero()[0]
         cols2 = cols_set2.nonzero()[0]
@@ -113,7 +113,7 @@ def nnlsm_blockpivot(A, B, is_input_prod=False, init=None):
                 candi_set = np.logical_or(
                     not_opt_set[:, col], infea_set[:, col])
                 to_change = np.max(candi_set.nonzero()[0])
-                PassSet[to_change, col] = -PassSet[to_change, col]
+                PassSet[to_change, col] = ~PassSet[to_change, col]
                 num_backup += 1
 
         (X[:, not_opt_cols], temp_cholesky, temp_eq) = normal_eq_comb(
@@ -126,7 +126,7 @@ def nnlsm_blockpivot(A, B, is_input_prod=False, init=None):
 
         not_opt_mask = np.tile(not_opt_colset, (n, 1))
         not_opt_set = np.logical_and(
-            np.logical_and(not_opt_mask, Y < 0), -PassSet)
+            np.logical_and(not_opt_mask, Y < 0), ~PassSet)
         infea_set = np.logical_and(
             np.logical_and(not_opt_mask, X < 0), PassSet)
         not_good = np.sum(not_opt_set, axis=0) + np.sum(infea_set, axis=0)
@@ -188,7 +188,7 @@ def nnlsm_activeset(A, B, overwrite=False, is_input_prod=False, init=None):
         X, num_cholesky, num_eq = normal_eq_comb(AtA, AtB)
         PassSet = X > 0
         not_opt_set = np.any(X < 0, axis=0)
-    elif init != None:
+    elif init is not None:
         X = init
         X[X < 0] = 0
         PassSet = X > 0
@@ -197,7 +197,7 @@ def nnlsm_activeset(A, B, overwrite=False, is_input_prod=False, init=None):
         PassSet = np.zeros([n, k], dtype=bool)
 
     Y = np.zeros([n, k])
-    opt_cols = (-not_opt_set).nonzero()[0]
+    opt_cols = (~not_opt_set).nonzero()[0]
     not_opt_cols = not_opt_set.nonzero()[0]
 
     Y[:, opt_cols] = AtA.dot(X[:, opt_cols]) - AtB[:, opt_cols]
@@ -220,7 +220,7 @@ def nnlsm_activeset(A, B, overwrite=False, is_input_prod=False, init=None):
         infea_subset = Z < 0
         temp = np.any(infea_subset, axis=0)
         infea_subcols = temp.nonzero()[0]
-        fea_subcols = (-temp).nonzero()[0]
+        fea_subcols = (~temp).nonzero()[0]
 
         if infea_subcols.size > 0:
             infea_cols = not_opt_cols[infea_subcols]
@@ -251,12 +251,12 @@ def nnlsm_activeset(A, B, overwrite=False, is_input_prod=False, init=None):
             Y[abs(Y) < 1e-12] = 0
 
             not_opt_subset = np.logical_and(
-                Y[:, fea_cols] < 0, -PassSet[:, fea_cols])
-            new_opt_cols = fea_cols[np.all(-not_opt_subset, axis=0)]
+                Y[:, fea_cols] < 0, ~PassSet[:, fea_cols])
+            new_opt_cols = fea_cols[np.all(~not_opt_subset, axis=0)]
             update_cols = fea_cols[np.any(not_opt_subset, axis=0)]
 
             if update_cols.size > 0:
-                val = Y[:, update_cols] * -PassSet[:, update_cols]
+                val = Y[:, update_cols] * ~PassSet[:, update_cols]
                 min_ix = np.argmin(val, axis=0)
                 PassSet[(min_ix, update_cols)] = True
 
@@ -287,7 +287,7 @@ def normal_eq_comb(AtA, AtB, PassSet=None):
     num_eq = 0
     if AtB.size == 0:
         Z = np.zeros([])
-    elif (PassSet == None) or np.all(PassSet):
+    elif (PassSet is None) or np.all(PassSet):
         Z = nla.solve(AtA, AtB)
         num_cholesky = 1
         num_eq = AtB.shape[1]
@@ -351,7 +351,7 @@ def _column_group_loop(B):
                 all_ones = False
                 subvec = vec[cols]
                 trues = subvec.nonzero()[0]
-                falses = (-subvec).nonzero()[0]
+                falses = (~subvec).nonzero()[0]
                 if trues.size > 0:
                     after.append(cols[trues])
                 if falses.size > 0:
@@ -385,18 +385,18 @@ def column_group_sub(B, i, cols):
         return [cols]
     if i == (B.shape[0] - 1):
         col_trues = cols[vec.nonzero()[0]]
-        col_falses = cols[(-vec).nonzero()[0]]
+        col_falses = cols[(~vec).nonzero()[0]]
         return [col_trues, col_falses]
     else:
         col_trues = cols[vec.nonzero()[0]]
-        col_falses = cols[(-vec).nonzero()[0]]
+        col_falses = cols[(~vec).nonzero()[0]]
         after = column_group_sub(B, i + 1, col_trues)
         after.extend(column_group_sub(B, i + 1, col_falses))
     return after
 
 
 def _test_column_grouping(m=10, n=5000, num_repeat=5, verbose=False):
-    print '\nTesting column_grouping ...'
+    print ('\nTesting column_grouping ...\n')
     A = np.array([[True, False, False, False, False],
                   [True, True, False, True, True]])
     grps1 = _column_group_loop(A)
@@ -404,8 +404,8 @@ def _test_column_grouping(m=10, n=5000, num_repeat=5, verbose=False):
     grps3 = [np.array([0]),
              np.array([1, 3, 4]),
              np.array([2])]
-    print 'OK' if all([np.array_equal(a, b) for (a, b) in zip(grps1, grps2)]) else 'Fail'
-    print 'OK' if all([np.array_equal(a, b) for (a, b) in zip(grps1, grps3)]) else 'Fail'
+    print ('OK' if all([np.array_equal(a, b) for (a, b) in zip(grps1, grps2)]) else 'Fail')
+    print ('OK' if all([np.array_equal(a, b) for (a, b) in zip(grps1, grps3)]) else 'Fail')
 
     for i in xrange(0, num_repeat):
         A = np.random.rand(m, n)
@@ -417,9 +417,9 @@ def _test_column_grouping(m=10, n=5000, num_repeat=5, verbose=False):
         grps2 = _column_group_recursive(B)
         elapsed_recursive = time.time() - start
         if verbose:
-            print 'Loop     :', elapsed_loop
-            print 'Recursive:', elapsed_recursive
-        print 'OK' if all([np.array_equal(a, b) for (a, b) in zip(grps1, grps2)]) else 'Fail'
+            print ('Loop     :', elapsed_loop)
+            print ('Recursive:', elapsed_recursive)
+        print ('OK' if all([np.array_equal(a, b) for (a, b) in zip(grps1, grps2)]) else 'Fail')
     # sorted_idx = np.concatenate(grps)
     # print B
     # print sorted_idx
@@ -428,22 +428,22 @@ def _test_column_grouping(m=10, n=5000, num_repeat=5, verbose=False):
 
 
 def _test_normal_eq_comb(m=10, k=3, num_repeat=5):
-    print '\nTesting normal_eq_comb() ...'
+    print ('\nTesting normal_eq_comb() ...\n')
     for i in xrange(0, num_repeat):
         A = np.random.rand(2 * m, m)
         X = np.random.rand(m, k)
         C = (np.random.rand(m, k) > 0.5)
-        X[-C] = 0
+        X[~C] = 0
         B = A.dot(X)
         B = A.T.dot(B)
         A = A.T.dot(A)
         Sol, a, b = normal_eq_comb(A, B, C)
-        print 'OK' if np.allclose(X, Sol) else 'Fail'
+        print ('OK' if np.allclose(X, Sol) else 'Fail')
     return
 
 
 def _test_nnlsm():
-    print '\nTesting nnls routines ...'
+    print ('\nTesting nnls routines ...\n')
     m = 100
     n = 10
     k = 200
@@ -465,16 +465,16 @@ def _test_nnlsm():
         C1, info = nnlsm_blockpivot(A, B)
         elapsed2 = time.time() - start
         rel_norm2 = nla.norm(C1 - X_org) / nla.norm(X_org)
-        print 'nnlsm_blockpivot:    ', 'OK  ' if info[0] else 'Fail',\
-            'elapsed:{0:.4f} error:{1:.4e}'.format(elapsed2, rel_norm2)
+        print ('nnlsm_blockpivot:    ', 'OK  ' if info[0] else 'Fail',\
+            'elapsed:{0:.4f} error:{1:.4e}'.format(elapsed2, rel_norm2))
 
         start = time.time()
         C2, info = nnlsm_activeset(A, B)
         num_backup = 0
         elapsed1 = time.time() - start
         rel_norm1 = nla.norm(C2 - X_org) / nla.norm(X_org)
-        print 'nnlsm_activeset:     ', 'OK  ' if info[0] else 'Fail',\
-            'elapsed:{0:.4f} error:{1:.4e}'.format(elapsed1, rel_norm1)
+        print ('nnlsm_activeset:     ', 'OK  ' if info[0] else 'Fail',\
+            'elapsed:{0:.4f} error:{1:.4e}'.format(elapsed1, rel_norm1))
 
         import scipy.optimize as opt
         start = time.time()
@@ -484,14 +484,14 @@ def _test_nnlsm():
             C3[:, i] = res[0]
         elapsed3 = time.time() - start
         rel_norm3 = nla.norm(C3 - X_org) / nla.norm(X_org)
-        print 'scipy.optimize.nnls: ', 'OK  ',\
-            'elapsed:{0:.4f} error:{1:.4e}'.format(elapsed3, rel_norm3)
+        print ('scipy.optimize.nnls: ', 'OK  ',\
+            'elapsed:{0:.4f} error:{1:.4e}'.format(elapsed3, rel_norm3))
 
         if num_backup > 0:
             break
         if rel_norm1 > 10e-5 or rel_norm2 > 10e-5 or rel_norm3 > 10e-5:
             break
-        print ''
+        print ('')
 
 if __name__ == '__main__':
     _test_column_grouping()

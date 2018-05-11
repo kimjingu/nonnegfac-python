@@ -186,7 +186,7 @@ def sparse_remove_column(X, to_remove):
     return B
 
 if __name__ == '__main__':
-    print '\nTesting norm_fro_err() ...'
+    print ('\nTesting norm_fro_err() ...\n')
     X = np.array([[2.0, 5.0, 0.0], [-3.0, 0.0, 1.5]])
     W = np.array([[1.0], [2.0]])
     H = np.array([[1.0], [1.0], [1.0]])
@@ -194,15 +194,15 @@ if __name__ == '__main__':
 
     val1 = norm_fro(X - W.dot(H.T))
     val2 = norm_fro_err(X, W, H, norm_X_fro)
-    print 'OK' if val1 == val2 else 'Fail'
+    print ('OK' if val1 == val2 else 'Fail')
 
-    print '\nTesting column_norm() ...'
+    print ('\nTesting column_norm() ...\n')
     X = np.array([[2.0, 5.0, 0.0], [-3.0, 0.0, 1.5]])
     val1 = column_norm(X, by_norm='2')
     val2 = np.sqrt(np.array([4 + 9, 25, 1.5 * 1.5]))
-    print 'OK' if np.allclose(val1, val2) else 'Fail'
+    print ('OK' if np.allclose(val1, val2) else 'Fail')
 
-    print '\nTesting normalize_column_pair() ...'
+    print ('\nTesting normalize_column_pair() ...\n')
     W = np.array([[1.0, -2.0], [2.0, 3.0]])
     H = np.array([[-0.5, 1.0], [1.0, 2.0], [1.0, 0.0]])
     val1 = column_norm(W, by_norm='2')
@@ -210,37 +210,37 @@ if __name__ == '__main__':
     W1, H1, weights = normalize_column_pair(W, H, by_norm='2')
     val2 = column_norm(W1, by_norm='2')
     val4 = W1.dot(H1.T)
-    print 'OK' if np.allclose(val1, weights) else 'Fail'
-    print 'OK' if np.allclose(val2, np.array([1.0, 1.0])) else 'Fail'
-    print 'OK' if np.allclose(val3, val4) else 'Fail'
+    print ('OK' if np.allclose(val1, weights) else 'Fail')
+    print ('OK' if np.allclose(val2, np.array([1.0, 1.0])) else 'Fail')
+    print ('OK' if np.allclose(val3, val4) else 'Fail')
 
-    print '\nTesting normalize_column() ...'
+    print ('\nTesting normalize_column() ...\n')
     X = np.array([[2.0, 5.0, 0.0], [-3.0, 0.0, 1.5]])
     val1 = column_norm(X, by_norm='2')
     (X1, weights) = normalize_column(X, by_norm='2')
     val2 = column_norm(X1, by_norm='2')
-    print 'OK' if np.allclose(val2, np.array([1.0, 1.0, 1.0])) else 'Fail'
-    print 'OK' if np.allclose(val1, weights) else 'Fail'
-    print 'OK' if np.allclose(X.shape, X1.shape) else 'Fail'
+    print ('OK' if np.allclose(val2, np.array([1.0, 1.0, 1.0])) else 'Fail')
+    print ('OK' if np.allclose(val1, weights) else 'Fail')
+    print ('OK' if np.allclose(X.shape, X1.shape) else 'Fail')
 
     X = sps.csr_matrix(np.array([[2.0, 5.0, 0.0], [-3.0, 0.0, 1.5]]))
     val1 = column_norm(X, by_norm='2')
     (X1, weights) = normalize_column(X, by_norm='2')
     val2 = column_norm(X1, by_norm='2')
-    print 'OK' if np.allclose(val2, np.array([1.0, 1.0, 1.0])) else 'Fail'
-    print 'OK' if np.allclose(val1, weights) else 'Fail'
-    print 'OK' if np.allclose(X.shape, X1.shape) else 'Fail'
+    print ('OK' if np.allclose(val2, np.array([1.0, 1.0, 1.0])) else 'Fail')
+    print ('OK' if np.allclose(val1, weights) else 'Fail')
+    print ('OK' if np.allclose(X.shape, X1.shape) else 'Fail')
 
-    print '\nTesting sparse_remove_row() ...'
+    print ('\nTesting sparse_remove_row() ...\n')
     X = sps.csr_matrix(
         np.array([[2.0, 5.0, 0.0], [-3.0, 0.0, 1.5], [0.5, -2.0, 2.5]]))
     X1 = sparse_remove_row(X, [1]).todense()
     val1 = np.array([[2.0, 5.0, 0.0], [0.5, -2.0, 2.5]])
-    print 'OK' if np.allclose(X1, val1) else 'Fail'
+    print ('OK' if np.allclose(X1, val1) else 'Fail')
 
-    print '\nTesting sparse_remove_column() ...'
+    print ('\nTesting sparse_remove_column() ...\n')
     X = sps.csr_matrix(
         np.array([[2.0, 5.0, 0.0], [-3.0, 0.0, 1.5], [0.5, -2.0, 2.5]]))
     X1 = sparse_remove_column(X, [1]).todense()
     val1 = np.array([[2.0, 0.0], [-3.0, 1.5], [0.5, 2.5]])
-    print 'OK' if np.allclose(X1, val1) else 'Fail'
+    print ('OK' if np.allclose(X1, val1) else 'Fail')

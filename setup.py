@@ -12,8 +12,8 @@ if __name__ == '__main__':
         import numpy
         import scipy
     except ImportError:
-        print 'This package requires Numpy (http://www.numpy.org) and Scipy (http://www.scipy.org) installed.'
-        print 'Exiting without installation.'
+        print ('This package requires Numpy (http://www.numpy.org) and Scipy (http://www.scipy.org) installed.')
+        print ('Exiting without installation.')
         import sys
         sys.exit(-1)
 
